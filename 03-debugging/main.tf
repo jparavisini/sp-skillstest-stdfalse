@@ -140,9 +140,9 @@ EOF
 }
 
 resource "aws_autoscaling_group" "asg" {
-  desired_capacity  = 0
+  desired_capacity  = 1
   max_size          = 5
-  min_size          = 0
+  min_size          = 1
   target_group_arns = [aws_lb_target_group.tg.arn]
   launch_template {
     id      = aws_launch_template.launch_template.id
