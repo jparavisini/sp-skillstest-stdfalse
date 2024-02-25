@@ -7,13 +7,12 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.main.id
+resource "aws_eip" "nat_eip_1" {
+  vpc = true
+}
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
+resource "aws_eip" "nat_eip_2" {
+  vpc = true
 }
 
 resource "aws_subnet" "public_subnet_1" {
@@ -30,6 +29,57 @@ resource "aws_subnet" "public_subnet_2" {
   map_public_ip_on_launch = true
 }
 
+resource "aws_subnet" "private_subnet_1" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.10.0/24"
+  availability_zone       = "us-west-1a"
+  map_public_ip_on_launch = false
+}
+
+resource "aws_subnet" "private_subnet_2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.4.0/24"
+  availability_zone       = "us-west-1c"
+  map_public_ip_on_launch = false
+}
+
+resource "aws_nat_gateway" "nat_gateway_1" {
+  allocation_id = aws_eip.nat_eip_1.id
+  subnet_id     = aws_subnet.public_subnet_1.id
+}
+
+resource "aws_nat_gateway" "nat_gateway_2" {
+  allocation_id = aws_eip.nat_eip_2.id
+  subnet_id     = aws_subnet.public_subnet_2.id
+}
+
+resource "aws_route_table" "public_route_table" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+}
+
+resource "aws_route_table" "private_route_table_1" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.nat_gateway_1.id
+  }
+}
+
+resource "aws_route_table" "private_route_table_2" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.nat_gateway_2.id
+  }
+}
+
 resource "aws_route_table_association" "public_subnet_1_route_association" {
   subnet_id      = aws_subnet.public_subnet_1.id
   route_table_id = aws_route_table.public_route_table.id
@@ -39,6 +89,17 @@ resource "aws_route_table_association" "public_subnet_2_route_association" {
   subnet_id      = aws_subnet.public_subnet_2.id
   route_table_id = aws_route_table.public_route_table.id
 }
+
+resource "aws_route_table_association" "private_subnet_1_rt_association" {
+  subnet_id      = "${aws_subnet.private_subnet_1.id}"
+  route_table_id = "${aws_route_table.private_route_table_1.id}"
+}
+
+resource "aws_route_table_association" "pri_subnet_2_rt_association" {
+  subnet_id      = "${aws_subnet.private_subnet_2.id}"
+  route_table_id = "${aws_route_table.private_route_table_2.id}"
+}
+
 
 # ALB and EC2 security groups
 resource "aws_security_group" "alb_sg" {
@@ -91,6 +152,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
+
 # ALB, TG and ASG
 resource "aws_lb" "alb" {
   name               = "alb"
@@ -142,7 +204,6 @@ resource "aws_launch_template" "launch_template" {
   name_prefix   = "launch_template"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  key_name      = "my-key-pair"
 
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
@@ -168,8 +229,8 @@ resource "aws_autoscaling_group" "asg" {
   }
 
   vpc_zone_identifier = [
-    aws_subnet.public_subnet_1.id,
-    aws_subnet.public_subnet_2.id
+    aws_subnet.private_subnet_1.id,
+    aws_subnet.private_subnet_2.id
   ]
 }
 
