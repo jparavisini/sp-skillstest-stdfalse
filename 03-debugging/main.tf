@@ -8,11 +8,11 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_eip" "nat_eip_1" {
-  vpc = true
+  domain = "vpc"
 }
 
 resource "aws_eip" "nat_eip_2" {
-  vpc = true
+  domain = "vpc"
 }
 
 resource "aws_subnet" "public_subnet_1" {
