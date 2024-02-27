@@ -91,13 +91,13 @@ resource "aws_route_table_association" "public_subnet_2_route_association" {
 }
 
 resource "aws_route_table_association" "private_subnet_1_rt_association" {
-  subnet_id      = "${aws_subnet.private_subnet_1.id}"
-  route_table_id = "${aws_route_table.private_route_table_1.id}"
+  subnet_id      = aws_subnet.private_subnet_1.id
+  route_table_id = aws_route_table.private_route_table_1.id
 }
 
 resource "aws_route_table_association" "pri_subnet_2_rt_association" {
-  subnet_id      = "${aws_subnet.private_subnet_2.id}"
-  route_table_id = "${aws_route_table.private_route_table_2.id}"
+  subnet_id      = aws_subnet.private_subnet_2.id
+  route_table_id = aws_route_table.private_route_table_2.id
 }
 
 
@@ -211,9 +211,9 @@ EOF
 }
 
 resource "aws_autoscaling_group" "asg" {
-  desired_capacity = 1
-  max_size         = 5
-  min_size         = 1
+  desired_capacity  = 1
+  max_size          = 5
+  min_size          = 1
   target_group_arns = [aws_lb_target_group.tg.arn]
   launch_template {
     id      = aws_launch_template.launch_template.id
