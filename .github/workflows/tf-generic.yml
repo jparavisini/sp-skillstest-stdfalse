@@ -1,0 +1,86 @@
+name: Terraform
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource:
+        type: choice
+        description: Choose the working directory
+        options:
+        - 01-consul
+        - 03-debugging
+      action:
+        description: Choose the Terraform action
+        type: choice
+        options:
+        - tf_apply
+        - tf_destroy
+
+jobs:
+  tf_apply_job:
+    name: Terraform apply job
+    if: ${{ github.event.inputs.action == 'tf_apply' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.event.inputs.resource }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+  
+      - name: Install Terraform
+        run: |
+          TERRAFORM_VERSION=1.4.6
+          wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+          terraform version
+          
+      - name: TF Init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform init
+  
+      - name: TF Validate
+        run: terraform validate
+  
+      - name: TF Apply
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform apply -auto-approve
+  
+  tf_destroy_job:
+    name: Terraform destroy job
+    if: ${{ github.event.inputs.action == 'tf_destroy' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.event.inputs.resource }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+  
+      - name: Install Terraform
+        run: |
+          TERRAFORM_VERSION=1.4.6
+          wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+          terraform version
+          
+      - name: TF Init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform init
+  
+      - name: TF Validate
+        run: terraform validate
+  
+      - name: TF Destroy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform destroy -auto-approve
