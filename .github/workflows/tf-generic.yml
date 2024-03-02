@@ -3,7 +3,7 @@ name: Terraform
 on:
   workflow_dispatch:
     inputs:
-      resource:
+      directory:
         type: choice
         description: Choose the working directory
         options:
@@ -23,10 +23,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.event.inputs.resource }}
+        working-directory: ${{ github.event.inputs.directory }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # branch
+          ref: ${{ github.event.inputs.directory }}
   
       - name: Install Terraform
         run: |
@@ -57,10 +60,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.event.inputs.resource }}
+        working-directory: ${{ github.event.inputs.directory }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # branch
+          ref: ${{ github.event.inputs.directory }}
   
       - name: Install Terraform
         run: |
