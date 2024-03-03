@@ -1,9 +1,10 @@
 # Cluster and Consul deployment (with helm)
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "19.5.1"
 
-  cluster_name    = "stdfalse-eks-cluster"
+  cluster_name    = local.my_cluster_name
   cluster_version = "1.28"
 
   vpc_id                         = aws_vpc.main.id

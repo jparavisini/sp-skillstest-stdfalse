@@ -1,4 +1,5 @@
 # VPC configuration, taking from 03-debugging
+
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
@@ -20,6 +21,11 @@ resource "aws_subnet" "public_subnet_1" {
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-west-1a"
   map_public_ip_on_launch = true
+  tags = {
+    # https://repost.aws/knowledge-center/eks-vpc-subnet-discovery
+    "kubernetes.io/cluster/${local.my_cluster_name}" = "shared"
+    "kubernetes.io/role/elb"                         = 1
+  }
 }
 
 resource "aws_subnet" "public_subnet_2" {
@@ -27,6 +33,10 @@ resource "aws_subnet" "public_subnet_2" {
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-west-1c"
   map_public_ip_on_launch = true
+  tags = {
+    "kubernetes.io/cluster/${local.my_cluster_name}" = "shared"
+    "kubernetes.io/role/elb"                         = 1
+  }
 }
 
 resource "aws_subnet" "private_subnet_1" {
@@ -34,6 +44,10 @@ resource "aws_subnet" "private_subnet_1" {
   cidr_block              = "10.0.10.0/24"
   availability_zone       = "us-west-1a"
   map_public_ip_on_launch = false
+  tags = {
+    "kubernetes.io/cluster/${local.my_cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"                = 1
+  }
 }
 
 resource "aws_subnet" "private_subnet_2" {
@@ -41,6 +55,10 @@ resource "aws_subnet" "private_subnet_2" {
   cidr_block              = "10.0.4.0/24"
   availability_zone       = "us-west-1c"
   map_public_ip_on_launch = false
+  tags = {
+    "kubernetes.io/cluster/${local.my_cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"                = 1
+  }
 }
 
 resource "aws_nat_gateway" "nat_gateway_1" {
