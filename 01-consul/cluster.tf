@@ -19,7 +19,7 @@ module "eks" {
     consul = {
       name = "consul"
 
-      instance_types = ["t3a.small"]
+      instance_types = ["t3a.medium"]
 
       min_size     = 1
       max_size     = 5
