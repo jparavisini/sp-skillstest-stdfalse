@@ -13,7 +13,7 @@ read execution_attempt
 if [ "$execution_attempt" == "1" ]; then
   kubeconfig_init
 else
-  echo "Skipping kubeconfig initialization"
+  echo "Skipping kubeconfig initialization..."
 fi
 
 # extract consul cluster connection details
@@ -35,16 +35,22 @@ do
 done
 
 # getting values
-for i in {1..10}
-do
-  echo "customer/com_acme_${i}/nodes_count: $(consul kv get "customer/com_acme_${i}/nodes_count")"
-done
+#for i in {1..10}
+#do
+#  echo "customer/com_acme_${i}/nodes_count: $(consul kv get "customer/com_acme_${i}/nodes_count")"
+#done
 
 # dropping keys with even numbers
-for i in {1..10}
-do
-  if (( i % 2 != 0 ))
-  then
-    consul kv delete "customer/com_acme_${i}/nodes_count"
-  fi
-done
+#for i in {1..10}
+#do
+#  if (( i % 2 != 0 ))
+#  then
+#    consul kv delete "customer/com_acme_${i}/nodes_count"
+#  fi
+#done
+
+echo "Running py client..."
+python3 consul_client.py #--consul-http-address "${CONSUL_ADDRESS}" --consul-http-token "${CONSUL_TOKEN}"
+
+echo "Back in bash client..."
+consul kv get -recurse "customer/com_acme"
